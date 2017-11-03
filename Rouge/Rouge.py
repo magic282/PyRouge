@@ -25,10 +25,10 @@ class Rouge(object):
         sentence = Rouge._format_sentence(raw_sentence)
         tokens = sentence.split(' ')
         if stem:
-            try:
-                tokens = [stemmer.stem(t) for t in tokens]
-            except:
-                pass
+            # try:  # TODO older NLTK has a bug in Porter Stemmer
+            tokens = [stemmer.stem(t) for t in tokens]
+            # except:
+            #     pass
         sent_len = len(tokens)
         for _n in range(n):
             buf = Counter()
