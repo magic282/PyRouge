@@ -61,8 +61,8 @@ class Rouge(object):
                 for k, v in sys_ngram.items():
                     if k in ref_ngram:
                         match_count += min(v, ref_ngram[k])
-                p = match_count / sys_count
-                r = match_count / ref_count
+                p = match_count / sys_count if sys_count != 0 else 0
+                r = match_count / ref_count if ref_count != 0 else 0
                 f = 0 if (p == 0 or r == 0) else 2 * p * r / (p + r)
                 result_buf[n]['p'] += p
                 result_buf[n]['r'] += r
