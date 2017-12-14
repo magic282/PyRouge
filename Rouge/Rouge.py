@@ -7,9 +7,11 @@ stemmer = PorterStemmer()
 
 
 class Rouge(object):
-    def __init__(self):
+    def __init__(self, use_ngram_buf=False):
         self.N = 2
         self.stem = True
+        self.use_ngram_buf = use_ngram_buf
+        self.ngram_buf = {}
 
     @staticmethod
     def _format_sentence(sentence):
@@ -19,8 +21,10 @@ class Rouge(object):
         s = s.strip()
         return s
 
-    @staticmethod
-    def _create_n_gram(raw_sentence, n, stem=False):
+    def _create_n_gram(self, raw_sentence, n, stem=False):
+        if self.use_ngram_buf:
+            if raw_sentence in self.ngram_buf:
+                return self.ngram_buf[raw_sentence]
         res = {}
         sentence = Rouge._format_sentence(raw_sentence)
         tokens = sentence.split(' ')
@@ -38,6 +42,8 @@ class Rouge(object):
                 ngram = ' '.join(tokens[idx: idx + _n + 1])
                 buf[ngram] += 1
             res[_n] = buf
+        if self.use_ngram_buf:
+            self.ngram_buf[raw_sentence] = res
         return res
 
     def compute_rouge(self, references, systems):
