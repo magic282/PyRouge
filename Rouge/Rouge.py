@@ -7,9 +7,9 @@ stemmer = PorterStemmer()
 
 
 class Rouge(object):
-    def __init__(self, use_ngram_buf=False):
+    def __init__(self, stem=True, use_ngram_buf=False):
         self.N = 2
-        self.stem = True
+        self.stem = stem
         self.use_ngram_buf = use_ngram_buf
         self.ngram_buf = {}
 
@@ -21,7 +21,7 @@ class Rouge(object):
         s = s.strip()
         return s
 
-    def _create_n_gram(self, raw_sentence, n, stem=False):
+    def _create_n_gram(self, raw_sentence, n, stem):
         if self.use_ngram_buf:
             if raw_sentence in self.ngram_buf:
                 return self.ngram_buf[raw_sentence]
@@ -46,6 +46,22 @@ class Rouge(object):
             self.ngram_buf[raw_sentence] = res
         return res
 
+    def get_ngram(self, sents, N, stem=False):
+        if isinstance(sents, list):
+            res = {}
+            for sent in sents:
+                ngrams = self._create_n_gram(sent, N, stem)
+                for this_n, counter in ngrams.items():
+                    if this_n not in res:
+                        res[this_n] = counter
+                    else:
+                        res[this_n] = res[this_n] + counter
+            return res
+        elif isinstance(sents, str):
+            return self._create_n_gram(sents, N, stem)
+        else:
+            raise ValueError
+
     def compute_rouge(self, references, systems):
         assert (len(references) == len(systems))
 
@@ -56,8 +72,8 @@ class Rouge(object):
             result_buf[n] = {'p': 0.0, 'r': 0.0, 'f': 0.0}
 
         for ref_sent, sys_sent in zip(references, systems):
-            ref_ngrams = self._create_n_gram(ref_sent, self.N, self.stem)
-            sys_ngrams = self._create_n_gram(sys_sent, self.N, self.stem)
+            ref_ngrams = self.get_ngram(ref_sent, self.N, self.stem)
+            sys_ngrams = self.get_ngram(sys_sent, self.N, self.stem)
             for n in range(self.N):
                 ref_ngram = ref_ngrams[n]
                 sys_ngram = sys_ngrams[n]
