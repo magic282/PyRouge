@@ -3,7 +3,7 @@ Rouge evaluation script implemented with Python.
 
 Currently, only Rouge-N is implemented.
 
-**WARNING** The result is slightly different from official Rouge.
+**WARNING** The result is slightly different from the official Rouge.
 
 ## Usage
 
