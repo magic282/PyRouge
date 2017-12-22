@@ -1,6 +1,8 @@
 # PyRouge
 Rouge evaluation script implemented with Python.
+
 Currently, only Rouge-N is implemented.
+
 **WARNING** The result is slightly different from official Rouge.
 
 ## Usage
