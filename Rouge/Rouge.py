@@ -107,8 +107,8 @@ class Rouge(object):
                 res[n_key]['f'] = self.get_mean_sd_internal(result_buf[n]['f'])
             else:
                 # not enough samples to calculate confidence interval
-                res[n_key]['p'] = (np.mean(result_buf[n]['p']), 0, (0, 0))
-                res[n_key]['r'] = (np.mean(result_buf[n]['r']), 0, (0, 0))
-                res[n_key]['f'] = (np.mean(result_buf[n]['f']), 0, (0, 0))
+                res[n_key]['p'] = (np.mean(result_buf[n]['p']), None, (None, None))
+                res[n_key]['r'] = (np.mean(result_buf[n]['r']), None, (None, None))
+                res[n_key]['f'] = (np.mean(result_buf[n]['f']), None, (None, None))
 
         return res
