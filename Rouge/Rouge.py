@@ -2,6 +2,7 @@ from collections import Counter
 import re
 
 from nltk.stem.porter import PorterStemmer
+import numpy as np, scipy.stats as st
 
 stemmer = PorterStemmer()
 
@@ -63,7 +64,6 @@ class Rouge(object):
             raise ValueError
 
     def get_mean_sd_internal(self, x):
-        import numpy as np, scipy.stats as st
         mean = np.mean(x)
         sd = st.sem(x)
         res = st.t.interval(0.95, len(x) - 1, loc=mean, scale=sd)
@@ -101,8 +101,14 @@ class Rouge(object):
         for n in range(self.N):
             n_key = 'rouge-{0}'.format(n + 1)
             res[n_key] = {}
-            res[n_key]['p'] = self.get_mean_sd_internal(result_buf[n]['p'])
-            res[n_key]['r'] = self.get_mean_sd_internal(result_buf[n]['r'])
-            res[n_key]['f'] = self.get_mean_sd_internal(result_buf[n]['f'])
+            if len(result_buf[n]['p']) >= 50:
+                res[n_key]['p'] = self.get_mean_sd_internal(result_buf[n]['p'])
+                res[n_key]['r'] = self.get_mean_sd_internal(result_buf[n]['r'])
+                res[n_key]['f'] = self.get_mean_sd_internal(result_buf[n]['f'])
+            else:
+                # not enough samples to calculate confidence interval
+                res[n_key]['p'] = (np.mean(result_buf[n]['p']), 0, (0, 0))
+                res[n_key]['r'] = (np.mean(result_buf[n]['r']), 0, (0, 0))
+                res[n_key]['f'] = (np.mean(result_buf[n]['f']), 0, (0, 0))
 
         return res
