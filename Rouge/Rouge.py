@@ -62,6 +62,13 @@ class Rouge(object):
         else:
             raise ValueError
 
+    def get_mean_sd_internal(self, x):
+        import numpy as np, scipy.stats as st
+        mean = np.mean(x)
+        sd = st.sem(x)
+        res = st.t.interval(0.95, len(x) - 1, loc=mean, scale=sd)
+        return (mean, sd, res)
+
     def compute_rouge(self, references, systems):
         assert (len(references) == len(systems))
 
@@ -69,7 +76,7 @@ class Rouge(object):
 
         result_buf = {}
         for n in range(self.N):
-            result_buf[n] = {'p': 0.0, 'r': 0.0, 'f': 0.0}
+            result_buf[n] = {'p': [], 'r': [], 'f': []}
 
         for ref_sent, sys_sent in zip(references, systems):
             ref_ngrams = self.get_ngram(ref_sent, self.N, self.stem)
@@ -86,13 +93,16 @@ class Rouge(object):
                 p = match_count / sys_count if sys_count != 0 else 0
                 r = match_count / ref_count if ref_count != 0 else 0
                 f = 0 if (p == 0 or r == 0) else 2 * p * r / (p + r)
-                result_buf[n]['p'] += p
-                result_buf[n]['r'] += r
-                result_buf[n]['f'] += f
+                result_buf[n]['p'].append(p)
+                result_buf[n]['r'].append(r)
+                result_buf[n]['f'].append(f)
 
+        res = {}
         for n in range(self.N):
-            result_buf[n]['p'] /= peer_count
-            result_buf[n]['r'] /= peer_count
-            result_buf[n]['f'] /= peer_count
+            n_key = 'rouge-{0}'.format(n + 1)
+            res[n_key] = {}
+            res[n_key]['p'] = self.get_mean_sd_internal(result_buf[n]['p'])
+            res[n_key]['r'] = self.get_mean_sd_internal(result_buf[n]['r'])
+            res[n_key]['f'] = self.get_mean_sd_internal(result_buf[n]['f'])
 
-        return result_buf
+        return res
