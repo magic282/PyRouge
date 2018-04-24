@@ -50,13 +50,18 @@ class Rouge(object):
     def get_ngram(self, sents, N, stem=False):
         if isinstance(sents, list):
             res = {}
+            for _n in range(N):
+                res[_n] = Counter()
             for sent in sents:
                 ngrams = self._create_n_gram(sent, N, stem)
                 for this_n, counter in ngrams.items():
-                    if this_n not in res:
-                        res[this_n] = counter
-                    else:
-                        res[this_n] = res[this_n] + counter
+                    # res[this_n] = res[this_n] + counter
+                    self_counter = res[this_n]
+                    for elem, count in counter.items():
+                        if elem not in self_counter:
+                            self_counter[elem] = count
+                        else:
+                            self_counter[elem] += count
             return res
         elif isinstance(sents, str):
             return self._create_n_gram(sents, N, stem)
@@ -107,8 +112,8 @@ class Rouge(object):
                 res[n_key]['f'] = self.get_mean_sd_internal(result_buf[n]['f'])
             else:
                 # not enough samples to calculate confidence interval
-                res[n_key]['p'] = (np.mean(result_buf[n]['p']), None, (None, None))
-                res[n_key]['r'] = (np.mean(result_buf[n]['r']), None, (None, None))
-                res[n_key]['f'] = (np.mean(result_buf[n]['f']), None, (None, None))
+                res[n_key]['p'] = (np.mean(np.array(result_buf[n]['p'])), 0, (0, 0))
+                res[n_key]['r'] = (np.mean(np.array(result_buf[n]['r'])), 0, (0, 0))
+                res[n_key]['f'] = (np.mean(np.array(result_buf[n]['f'])), 0, (0, 0))
 
         return res
